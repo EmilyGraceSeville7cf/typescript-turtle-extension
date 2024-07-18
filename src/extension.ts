@@ -1,26 +1,85 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "gimp-turtle" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('gimp-turtle.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from GIMP Turtle!');
-	});
-
-	context.subscriptions.push(disposable);
+interface CommandData {
+    name: string,
+    description: string,
+    args?: string[],
+    shortcut?: string
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+function createSnippet(command: CommandData, label: string, kind: vscode.CompletionItemKind): vscode.CompletionItem {
+    const completion = new vscode.CompletionItem(label, kind);
+    completion.insertText = new vscode.SnippetString(command.name);
+
+    if (command.args !== undefined) {
+        let index = 1;
+
+        for (const arg of command.args) {
+            completion.insertText.appendText(" ")
+            completion.insertText.appendPlaceholder(arg, index++)
+        }
+    }
+
+    const docs: any = new vscode.MarkdownString(command.description);
+    completion.documentation = docs;
+    docs.baseUri = vscode.Uri.parse('https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle');
+    return completion
+}
+
+export function activate(context: vscode.ExtensionContext) {
+    const provider = vscode.languages.registerCompletionItemProvider('scheme', {
+        provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
+            const commands: CommandData[] = [
+                { name: "move-on", description: "Move the turtle on a specific vector", args: ["x", "y"] },
+                { name: "move-to", description: "Move the turtle to a specific point", args: ["x", "y"] },
+                { name: "move-forward", description: "Move the turtle forward for a specific amount of units", args: ["units"], shortcut: "f" },
+                { name: "move-backward", description: "Move the turtle backward for a specific amount of units", args: ["units"], shortcut: "b" },
+                { name: "move-to-center", description: "Move the turtle to the center" },
+                { name: "move-to-top-left", description: "Move the turtle to the top left corner" },
+                { name: "move-to-top-middle", description: "Move the turtle to the top middle side" },
+                { name: "move-to-top-right", description: "Move the turtle to the top right corner" },
+                { name: "move-to-middle-right", description: "Move the turtle to the middle right side" },
+                { name: "move-to-bottom-right", description: "Move the turtle to the bottom right corner" },
+                { name: "move-to-bottom-middle", description: "Move the turtle to the bottom middle side" },
+                { name: "move-to-bottom-left", description: "Move the turtle to the bottom left corner" },
+                { name: "move-to-middle-left", description: "Move the turtle to the middle left side" },
+                { name: "turn-left", description: "Rotate the turtle left at a specific amount of degrees", args: ["angle"], shortcut: "l" },
+                { name: "turn-right", description: "Rotate the turtle right at a specific amount of degrees", args: ["angle"], shortcut: "r" },
+                { name: "up", description: "Make turtle not draw on movements" },
+                { name: "down", description: "Make turtle draw on movements" },
+                { name: "black", description: "Change the turtle drawing color to black" },
+                { name: "red", description: "Change the turtle drawing color to red" },
+                { name: "green", description: "Change the turtle drawing color to green" },
+                { name: "yellow", description: "Change the turtle drawing color to yellow" },
+                { name: "blue", description: "Change the turtle drawing color to blue" },
+                { name: "magenta", description: "Change the turtle drawing color to magenta" },
+                { name: "cyan", description: "Change the turtle drawing color to cyan" },
+                { name: "gray", description: "Change the turtle drawing color to gray" },
+                { name: "random-color", description: "Change the turtle drawing color to a random one" },
+                { name: "rgb", description: "Change the turtle drawing color to a specific one", args: ["red", "green", "blue"] },
+                { name: "rgb-random-color", description: "Change the turtle drawing color to a random one" },
+            ]
+
+            const commandCompletions = commands.map(command =>
+                createSnippet(command, command.name, vscode.CompletionItemKind.Function)
+            )
+
+            const snippetCompletions = commands
+                .filter(command => command.shortcut !== undefined)
+                .map(command => createSnippet(command, command.shortcut!, vscode.CompletionItemKind.Snippet))
+
+            const constants = [45, 90, 135, 180]
+            constants.forEach(constant => constants.push(-constant))
+
+            const constantCompletions = constants.map(constant => {
+                const completion = new vscode.CompletionItem(constant.toString(), vscode.CompletionItemKind.Constant);
+                completion.insertText = new vscode.SnippetString(constant.toString());
+                return completion
+            })
+
+            return commandCompletions.concat(snippetCompletions).concat(constantCompletions)
+        }
+    });
+
+    context.subscriptions.push(provider);
+}
