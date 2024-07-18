@@ -10,7 +10,7 @@ interface CommandData {
 
 function createSnippet(command: CommandData, label: string, kind: vscode.CompletionItemKind): vscode.CompletionItem {
     const completion = new vscode.CompletionItem(label, kind);
-    completion.insertText = new vscode.SnippetString(command.name);
+    completion.insertText = new vscode.SnippetString("(" + command.name);
 
     if (command.args !== undefined) {
         let index = 1;
@@ -20,6 +20,8 @@ function createSnippet(command: CommandData, label: string, kind: vscode.Complet
             completion.insertText.appendPlaceholder(arg, index++)
         }
     }
+
+    completion.insertText.appendText(")")
 
     const docs: any = new vscode.MarkdownString(command.description);
     completion.documentation = docs;
