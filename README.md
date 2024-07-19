@@ -1,7 +1,7 @@
 # Turtle support
 
-Provides support for [turtle][turtle] configs.
+Provides support for [Turtle configs][turtle].
 
-[turtle]: https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle
+[turtle]: https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle?tab=readme-ov-file#configuration-script-commands
 
 ![screenshot](assets/screenshot.jpg)
