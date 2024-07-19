@@ -89,6 +89,7 @@ const commands = [
     newCommand("rgb-random-color", "Change the turtle drawing color to a **random one**"),
 ]
 
+
 interface UserDefinedIdentifier {
     readonly regex: RegExp;
     readonly description: string;
@@ -111,9 +112,10 @@ function createUserDefinedIdentifierSnippet(identifier: string, specification: U
 const identifiers = [
     newUserDefinedIdentifier(/\(\s*define (?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)/, "A user defined **variable**", vscode.CompletionItemKind.Variable),
     newUserDefinedIdentifier(/\(\s*define \((?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)/, "A user defined **function**", vscode.CompletionItemKind.Function),
-    newUserDefinedIdentifier(/(\(\d+\s+\d+\s+\d+\))/, "A user defined **color**", vscode.CompletionItemKind.Color),
+    newUserDefinedIdentifier(/(\(\s*\d+\s+\d+\s+\d+\s*\))/, "A user defined **color**", vscode.CompletionItemKind.Color),
     newUserDefinedIdentifier(/\((?:move-on|move-to)\s+(\d+\s+\d+)\)/, "A user defined **vector**", vscode.CompletionItemKind.Constant),
 ]
+
 
 export function activate(context: vscode.ExtensionContext) {
     const provider = vscode.languages.registerCompletionItemProvider('scheme', {
@@ -185,29 +187,53 @@ export function activate(context: vscode.ExtensionContext) {
     subscribeToDocumentChanges(context, colorDiagnostics);
 }
 
-const wrongColorRegex = /\(\s*\d+(\s+\d+)?\s*\)/
+
+
+interface PatternDiagnostic {
+    readonly regex: RegExp;
+    readonly description: string;
+}
+
+function newPatternDiagnostic(regex: RegExp, description: string): PatternDiagnostic {
+    return { regex, description }
+}
+
+const patternDiagnostics = [
+    newPatternDiagnostic(/\(\s*\d+(\s+\d+)?\s*\)/, "Red, green, blue color components were expected, less were found."),
+    newPatternDiagnostic(/\(\s*\d+(\s+\d+){3,}\s*\)/, "Just red, green, blue color components were expected, more were found.")
+].concat(
+    commands.filter(command => command.args !== undefined).map(command =>
+        newPatternDiagnostic(
+            new RegExp(`\\\(\\s*${command.name}((\\s+\\d+){${command.args!.length - 1}}|(\\s+\\d+){${command.args!.length + 1}})\\s*\\\)`),
+            `'${command.name}' expected exactly ${command.args?.length} arguments`
+        )
+    )
+)
 
 export function refreshDiagnostics(doc: vscode.TextDocument, colorDiagnostics: vscode.DiagnosticCollection): void {
     const diagnostics: vscode.Diagnostic[] = [];
 
     for (let lineIndex = 0; lineIndex < doc.lineCount; lineIndex++) {
         const lineOfText = doc.lineAt(lineIndex);
-        if (wrongColorRegex.test(lineOfText.text))
-            diagnostics.push(createDiagnostic(lineOfText, lineIndex));
+        tryCreateDiagnostic(lineOfText, lineIndex, diagnostics);
     }
 
     colorDiagnostics.set(doc.uri, diagnostics);
 }
 
-function createDiagnostic(line: vscode.TextLine, lineIndex: number): vscode.Diagnostic {
-    const index = line.text.search(wrongColorRegex);
-    const match = line.text.match(wrongColorRegex)![0]
+function tryCreateDiagnostic(line: vscode.TextLine, lineIndex: number, diagnostics: vscode.Diagnostic[]) {
+    const patternDiagnostic = patternDiagnostics.find(patternDiagnostic => patternDiagnostic.regex.test(line.text))
+    if (patternDiagnostic === undefined)
+        return
+
+    const index = line.text.search(patternDiagnostic.regex);
+    const match = line.text.match(patternDiagnostic.regex)![0]
     const range = new vscode.Range(lineIndex, index, lineIndex, index + match.length);
 
-    const diagnostic = new vscode.Diagnostic(range, "Red, green, blue color components were expected, less were found.",
+    const diagnostic = new vscode.Diagnostic(range, patternDiagnostic.description,
         vscode.DiagnosticSeverity.Warning);
     diagnostic.code = "turtle";
-    return diagnostic;
+    diagnostics.push(diagnostic);
 }
 
 export function subscribeToDocumentChanges(context: vscode.ExtensionContext, colorDiagnostics: vscode.DiagnosticCollection): void {
