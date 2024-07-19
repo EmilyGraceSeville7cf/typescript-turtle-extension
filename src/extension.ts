@@ -210,6 +210,14 @@ const patternDiagnostics = [
             vscode.DiagnosticSeverity.Error
         )
     )
+).concat(
+    commands.filter(command => command.args !== undefined).map(command =>
+        newPatternDiagnostic(
+            new RegExp(`\\\(\\s*${command.name}(\\s+-?\\d+)*(\\s+[a-zA-Z])(\\s+-?\\d+)*\\\)`),
+            `'${command.name}' expected integer arguments`,
+            vscode.DiagnosticSeverity.Error
+        )
+    )
 )
 
 export function refreshDiagnostics(doc: vscode.TextDocument, targetDiagnostics: vscode.DiagnosticCollection): void {
