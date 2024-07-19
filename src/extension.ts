@@ -203,12 +203,18 @@ const patternDiagnostics = [
     newPatternDiagnostic(/\(\s*\d+(\s+\d+)?\s*\)/, "Red, green, blue color components were expected, less were found.", vscode.DiagnosticSeverity.Warning),
     newPatternDiagnostic(/\(\s*\d+(\s+\d+){3,}\s*\)/, "Just red, green, blue color components were expected, more were found.", vscode.DiagnosticSeverity.Warning)
 ].concat(
-    commands.filter(command => command.args !== undefined).map(command =>
-        newPatternDiagnostic(
-            new RegExp(`\\\(\\s*${command.name}((\\s+-?\\d+){${command.args!.length - 1}}|(\\s+-?\\d+){${command.args!.length + 1}})\\s*\\\)`),
+    commands.filter(command => command.args !== undefined).map(command => {
+        let regex = `\\\(\\s*${command.name}((\\s+-?\\d+){${command.args!.length - 1}}|(\\s+-?\\d+){${command.args!.length + 1}})\\s*\\\)`
+        if (command.args!.length > 0)
+            regex += `|\\\(\\s*${command.name}\\s*\\\)`
+
+        const diagnostic = newPatternDiagnostic(
+            new RegExp(regex),
             `'${command.name}' expected exactly ${command.args?.length} arguments`,
             vscode.DiagnosticSeverity.Error
         )
+        return diagnostic
+    }
     )
 ).concat(
     commands.filter(command => command.args !== undefined).map(command =>
