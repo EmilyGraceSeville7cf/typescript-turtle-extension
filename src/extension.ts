@@ -51,6 +51,12 @@ function createKeywordSnippet(keyword: string, body: string, description: string
     return completion
 }
 
+function createWordSnippet(word: string): vscode.CompletionItem {
+    const completion = new vscode.CompletionItem(word, vscode.CompletionItemKind.Text);
+    completion.insertText = new vscode.SnippetString(word);
+    return completion
+}
+
 const commands = [
     newCommand("move-on", "Move the turtle **on** a specific vector", ["x", "y"]),
     newCommand("move-to", "Move the turtle **to** a specific point", ["x", "y"]),
@@ -120,10 +126,15 @@ export function activate(context: vscode.ExtensionContext) {
                 createKeywordSnippet("let*", "((${1:variable} ${2:value})) ${3:commands}", "**Define** variables with specific values")
             ]
 
+            const wordCompletions = [...new Set(document.getText().split(/\W/).filter(word =>
+                keywordCompletions.map(snippet => snippet.label).indexOf(word) === -1
+            ))].map(word => createWordSnippet(word))
+
             return commandCompletions.concat(snippetCompletions)
                 .concat(constantCompletions)
                 .concat(variableCompletions)
                 .concat(keywordCompletions)
+                .concat(wordCompletions)
         }
     });
 
