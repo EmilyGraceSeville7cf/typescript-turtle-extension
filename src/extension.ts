@@ -113,7 +113,7 @@ const identifiers = [
     newUserDefinedIdentifier(/\(\s*define (?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)/, "A user defined **variable**", vscode.CompletionItemKind.Variable),
     newUserDefinedIdentifier(/\(\s*define \((?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)/, "A user defined **function**", vscode.CompletionItemKind.Function),
     newUserDefinedIdentifier(/(\(\s*\d+\s+\d+\s+\d+\s*\))/, "A user defined **color**", vscode.CompletionItemKind.Color),
-    newUserDefinedIdentifier(/\((?:move-on|move-to)\s+(\d+\s+\d+)\)/, "A user defined **vector**", vscode.CompletionItemKind.Constant),
+    newUserDefinedIdentifier(/\((?:move-on|move-to)\s+(-?\d+\s+-?\d+)\)/, "A user defined **vector**", vscode.CompletionItemKind.Constant),
 ]
 
 
