@@ -178,4 +178,54 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(provider);
+
+    const colorDiagnostics = vscode.languages.createDiagnosticCollection("turtle");
+    context.subscriptions.push(colorDiagnostics);
+
+    subscribeToDocumentChanges(context, colorDiagnostics);
+}
+
+const wrongColorRegex = /\(\s*\d+(\s+\d+)?\s*\)/
+
+export function refreshDiagnostics(doc: vscode.TextDocument, colorDiagnostics: vscode.DiagnosticCollection): void {
+    const diagnostics: vscode.Diagnostic[] = [];
+
+    for (let lineIndex = 0; lineIndex < doc.lineCount; lineIndex++) {
+        const lineOfText = doc.lineAt(lineIndex);
+        if (wrongColorRegex.test(lineOfText.text))
+            diagnostics.push(createDiagnostic(lineOfText, lineIndex));
+    }
+
+    colorDiagnostics.set(doc.uri, diagnostics);
+}
+
+function createDiagnostic(line: vscode.TextLine, lineIndex: number): vscode.Diagnostic {
+    const index = line.text.search(wrongColorRegex);
+    const match = line.text.match(wrongColorRegex)![0]
+    const range = new vscode.Range(lineIndex, index, lineIndex, index + match.length);
+
+    const diagnostic = new vscode.Diagnostic(range, "Red, green, blue color components were expected, less were found.",
+        vscode.DiagnosticSeverity.Warning);
+    diagnostic.code = "turtle";
+    return diagnostic;
+}
+
+export function subscribeToDocumentChanges(context: vscode.ExtensionContext, colorDiagnostics: vscode.DiagnosticCollection): void {
+    if (vscode.window.activeTextEditor)
+        refreshDiagnostics(vscode.window.activeTextEditor.document, colorDiagnostics);
+
+    context.subscriptions.push(
+        vscode.window.onDidChangeActiveTextEditor(editor => {
+            if (editor)
+                refreshDiagnostics(editor.document, colorDiagnostics);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeTextDocument(e => refreshDiagnostics(e.document, colorDiagnostics))
+    );
+
+    context.subscriptions.push(
+        vscode.workspace.onDidCloseTextDocument(doc => colorDiagnostics.delete(doc.uri))
+    );
 }
