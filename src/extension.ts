@@ -42,6 +42,15 @@ function createVariableSnippet(variable: string, description: string): vscode.Co
     return completion
 }
 
+function createKeywordSnippet(keyword: string, body: string, description: string): vscode.CompletionItem {
+    const completion = new vscode.CompletionItem(keyword, vscode.CompletionItemKind.Keyword);
+    completion.insertText = new vscode.SnippetString(`(${keyword} ${body})`);
+    const docs: any = new vscode.MarkdownString(description);
+    completion.documentation = docs;
+    docs.baseUri = vscode.Uri.parse('https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/');
+    return completion
+}
+
 const commands = [
     newCommand("move-on", "Move the turtle **on** a specific vector", ["x", "y"]),
     newCommand("move-to", "Move the turtle **to** a specific point", ["x", "y"]),
@@ -104,7 +113,17 @@ export function activate(context: vscode.ExtensionContext) {
                 createVariableSnippet("turtle-theme", "**Theme** for the turtle")
             ]
 
-            return commandCompletions.concat(snippetCompletions).concat(constantCompletions).concat(variableCompletions)
+            const keywordCompletions = [
+                createKeywordSnippet("if", "${1:condition} ${2:then} ${3:else}", "Check whether a condition is true and do something in regard"),
+                createKeywordSnippet("define", "${1:variable} ${2:value}", "**Define** a variable with a specific value"),
+                createKeywordSnippet("set!", "${1:variable} ${2:value}", "**Set** a specific value to a variable"),
+                createKeywordSnippet("let*", "((${1:variable} ${2:value})) ${3:commands}", "**Define** variables with specific values")
+            ]
+
+            return commandCompletions.concat(snippetCompletions)
+                .concat(constantCompletions)
+                .concat(variableCompletions)
+                .concat(keywordCompletions)
         }
     });
 
