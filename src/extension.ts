@@ -1,3 +1,4 @@
+import { match } from 'assert';
 import * as vscode from 'vscode';
 
 interface Command {
@@ -88,6 +89,32 @@ const commands = [
     newCommand("rgb-random-color", "Change the turtle drawing color to a **random one**"),
 ]
 
+interface UserDefinedIdentifier {
+    readonly regex: RegExp;
+    readonly description: string;
+    readonly kind: vscode.CompletionItemKind;
+}
+
+function newUserDefinedIdentifier(regex: RegExp, description: string, kind: vscode.CompletionItemKind): UserDefinedIdentifier {
+    return { regex, description, kind }
+}
+
+function createUserDefinedIdentifierSnippet(identifier: string, specification: UserDefinedIdentifier): vscode.CompletionItem {
+    const completion = new vscode.CompletionItem(identifier, specification.kind);
+    completion.insertText = new vscode.SnippetString(identifier);
+    const docs: any = new vscode.MarkdownString(specification.description);
+    completion.documentation = docs;
+    docs.baseUri = vscode.Uri.parse('https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle');
+    return completion
+}
+
+const identifiers = [
+    newUserDefinedIdentifier(/\(\s*define (?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)/, "A user defined **variable**", vscode.CompletionItemKind.Variable),
+    newUserDefinedIdentifier(/\(\s*define \((?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)/, "A user defined **function**", vscode.CompletionItemKind.Function),
+    newUserDefinedIdentifier(/(\(\d+\s+\d+\s+\d+\))/, "A user defined **color**", vscode.CompletionItemKind.Color),
+    newUserDefinedIdentifier(/\((?:move-on|move-to)\s+(\d+\s+\d+)\)/, "A user defined **vector**", vscode.CompletionItemKind.Value),
+]
+
 export function activate(context: vscode.ExtensionContext) {
     const provider = vscode.languages.registerCompletionItemProvider('scheme', {
         provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
@@ -126,14 +153,26 @@ export function activate(context: vscode.ExtensionContext) {
                 createKeywordSnippet("let*", "((${1:variable} ${2:value})) ${3:commands}", "**Define** variables with specific values")
             ]
 
-            const wordCompletions = [...new Set(document.getText().split(/\W/).filter(word =>
+            const userDefinedIdentifierCompletions = [...new Set(document.getText().split("\n"))]
+                .map(line => {
+                    const identifier = identifiers.find(identifier => identifier.regex.test(line))
+                    if (identifier === undefined)
+                        return null
+
+                    return createUserDefinedIdentifierSnippet(line.match(identifier.regex)![1], identifier)
+                }).filter(completion => completion !== null).filter(completion =>
+                    keywordCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1
+                )
+
+            const wordCompletions = [...new Set(document.getText().split(/\W/))].filter(word =>
                 keywordCompletions.map(snippet => snippet.label).indexOf(word) === -1
-            ))].map(word => createWordSnippet(word))
+            ).map(word => createWordSnippet(word))
 
             return commandCompletions.concat(snippetCompletions)
                 .concat(constantCompletions)
                 .concat(variableCompletions)
                 .concat(keywordCompletions)
+                .concat(userDefinedIdentifierCompletions)
                 .concat(wordCompletions)
         }
     });
