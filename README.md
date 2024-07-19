@@ -12,3 +12,4 @@ Provides support for [Turtle configs][turtle].
 
 - [x] Completions for Turtle commands, and some basic Scheme constructs
 - [x] RegExp-based completions for user-defined variables, functions, colors and vectors
+- [x] Warnings for incorrect RGB colors and wrong argument count for commands
