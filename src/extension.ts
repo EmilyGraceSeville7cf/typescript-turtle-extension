@@ -1,4 +1,3 @@
-import { match } from 'assert';
 import * as vscode from 'vscode';
 
 interface Command {
