@@ -12,7 +12,7 @@ function newCommand(name: string, description: string, args: string[] = []): Com
     return { name, description, args }
 }
 
-function createSnippet(command: Command, label: string, kind: vscode.CompletionItemKind): vscode.CompletionItem {
+function createCommandSnippet(command: Command, label: string, kind: vscode.CompletionItemKind): vscode.CompletionItem {
     const completion = new vscode.CompletionItem(label, kind);
     completion.insertText = new vscode.SnippetString("(" + command.name);
 
@@ -28,6 +28,15 @@ function createSnippet(command: Command, label: string, kind: vscode.CompletionI
     completion.insertText.appendText(")")
 
     const docs: any = new vscode.MarkdownString(command.description);
+    completion.documentation = docs;
+    docs.baseUri = vscode.Uri.parse('https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle');
+    return completion
+}
+
+function createVariableSnippet(variable: string, description: string): vscode.CompletionItem {
+    const completion = new vscode.CompletionItem(variable, vscode.CompletionItemKind.Variable);
+    completion.insertText = new vscode.SnippetString(`(define ${variable} '(\${1:commands}))`);
+    const docs: any = new vscode.MarkdownString(description);
     completion.documentation = docs;
     docs.baseUri = vscode.Uri.parse('https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle');
     return completion
@@ -68,12 +77,12 @@ export function activate(context: vscode.ExtensionContext) {
     const provider = vscode.languages.registerCompletionItemProvider('scheme', {
         provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
             const commandCompletions = commands.map(command =>
-                createSnippet(command, command.name, vscode.CompletionItemKind.Function)
+                createCommandSnippet(command, command.name, vscode.CompletionItemKind.Function)
             )
 
             const snippetCompletions = commands
                 .filter(command => command.shortcut !== undefined)
-                .map(command => createSnippet(command, command.shortcut!, vscode.CompletionItemKind.Snippet))
+                .map(command => createCommandSnippet(command, command.shortcut!, vscode.CompletionItemKind.Snippet))
 
             const constants = [45, 90, 135, 180]
             constants.forEach(constant => constants.push(-constant))
@@ -84,7 +93,18 @@ export function activate(context: vscode.ExtensionContext) {
                 return completion
             })
 
-            return commandCompletions.concat(snippetCompletions).concat(constantCompletions)
+            const configurationVariable = new vscode.CompletionItem("turtle-configuration", vscode.CompletionItemKind.Variable);
+            configurationVariable.insertText = new vscode.SnippetString("(define turtle-configuration '(${1:commands}))");
+            const configurationVariableDocs: any = new vscode.MarkdownString("**Commands** for the turtle");
+            configurationVariable.documentation = configurationVariableDocs;
+            configurationVariableDocs.baseUri = vscode.Uri.parse('https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle');
+
+            const variableCompletions = [
+                createVariableSnippet("turtle-configuration", "**Commands** for the turtle"),
+                createVariableSnippet("turtle-theme", "**Theme** for the turtle")
+            ]
+
+            return commandCompletions.concat(snippetCompletions).concat(constantCompletions).concat(variableCompletions)
         }
     });
 
