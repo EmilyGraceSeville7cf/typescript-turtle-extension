@@ -1,14 +1,18 @@
 import * as vscode from 'vscode';
 
-interface CommandData {
-    name: string,
-    description: string,
-    args?: string[],
-    shortcut?: string,
-    opposite?: string
+interface Command {
+    readonly name: string,
+    readonly description: string,
+    readonly args?: string[],
+    readonly shortcut?: string,
+    readonly opposite?: string
 }
 
-function createSnippet(command: CommandData, label: string, kind: vscode.CompletionItemKind): vscode.CompletionItem {
+function newCommand(name: string, description: string, args: string[] = []): Command {
+    return { name, description, args }
+}
+
+function createSnippet(command: Command, label: string, kind: vscode.CompletionItemKind): vscode.CompletionItem {
     const completion = new vscode.CompletionItem(label, kind);
     completion.insertText = new vscode.SnippetString("(" + command.name);
 
@@ -29,35 +33,35 @@ function createSnippet(command: CommandData, label: string, kind: vscode.Complet
     return completion
 }
 
-const commands: CommandData[] = [
-    { name: "move-on", description: "Move the turtle on a specific vector", args: ["x", "y"] },
-    { name: "move-to", description: "Move the turtle to a specific point", args: ["x", "y"] },
-    { name: "move-forward", description: "Move the turtle forward for a specific amount of units", args: ["units"], shortcut: "f", opposite: "move-backward" },
-    { name: "move-backward", description: "Move the turtle backward for a specific amount of units", args: ["units"], shortcut: "b", opposite: "move-forward" },
-    { name: "move-to-center", description: "Move the turtle to the center" },
-    { name: "move-to-top-left", description: "Move the turtle to the top left corner" },
-    { name: "move-to-top-middle", description: "Move the turtle to the top middle side" },
-    { name: "move-to-top-right", description: "Move the turtle to the top right corner" },
-    { name: "move-to-middle-right", description: "Move the turtle to the middle right side" },
-    { name: "move-to-bottom-right", description: "Move the turtle to the bottom right corner" },
-    { name: "move-to-bottom-middle", description: "Move the turtle to the bottom middle side" },
-    { name: "move-to-bottom-left", description: "Move the turtle to the bottom left corner" },
-    { name: "move-to-middle-left", description: "Move the turtle to the middle left side" },
-    { name: "turn-left", description: "Rotate the turtle left at a specific amount of degrees", args: ["angle"], shortcut: "l", opposite: "turn-right" },
-    { name: "turn-right", description: "Rotate the turtle right at a specific amount of degrees", args: ["angle"], shortcut: "r", opposite: "turn-left" },
-    { name: "up", description: "Make turtle not draw on movements" },
-    { name: "down", description: "Make turtle draw on movements" },
-    { name: "black", description: "Change the turtle drawing color to black" },
-    { name: "red", description: "Change the turtle drawing color to red" },
-    { name: "green", description: "Change the turtle drawing color to green" },
-    { name: "yellow", description: "Change the turtle drawing color to yellow" },
-    { name: "blue", description: "Change the turtle drawing color to blue" },
-    { name: "magenta", description: "Change the turtle drawing color to magenta" },
-    { name: "cyan", description: "Change the turtle drawing color to cyan" },
-    { name: "gray", description: "Change the turtle drawing color to gray" },
-    { name: "random-color", description: "Change the turtle drawing color to a random one" },
-    { name: "rgb", description: "Change the turtle drawing color to a specific one", args: ["red", "green", "blue"] },
-    { name: "rgb-random-color", description: "Change the turtle drawing color to a random one" },
+const commands = [
+    newCommand("move-on", "Move the turtle **on** a specific vector", ["x", "y"]),
+    newCommand("move-to", "Move the turtle **to** a specific point", ["x", "y"]),
+    { name: "move-forward", description: "Move the turtle **forward** for a specific amount of units", args: ["units"], shortcut: "f", opposite: "move-backward" },
+    { name: "move-backward", description: "Move the turtle **backward** for a specific amount of units", args: ["units"], shortcut: "b", opposite: "move-forward" },
+    newCommand("move-to-center", "Move the turtle to the **center**"),
+    newCommand("move-to-top-left", "Move the turtle to the **top left corner**"),
+    newCommand("move-to-top-middle", "Move the turtle to the **top middle side**"),
+    newCommand("move-to-top-right", "Move the turtle to the **top right corner**"),
+    newCommand("move-to-middle-right", "Move the turtle to the **middle right side**"),
+    newCommand("move-to-bottom-right", "Move the turtle to the **bottom right corner**"),
+    newCommand("move-to-bottom-middle", "Move the turtle to the **bottom middle side**"),
+    newCommand("move-to-bottom-left", "Move the turtle to the **bottom left corner**"),
+    newCommand("move-to-middle-left", "Move the turtle to the **middle left side**"),
+    { name: "turn-left", description: "Rotate the turtle **left** at a specific amount of degrees", args: ["angle"], shortcut: "l", opposite: "turn-right" },
+    { name: "turn-right", description: "Rotate the turtle **right** at a specific amount of degrees", args: ["angle"], shortcut: "r", opposite: "turn-left" },
+    newCommand("up", "Make turtle **not draw** on movements"),
+    newCommand("down", "Make turtle **draw** on movements"),
+    newCommand("black", "Change the turtle drawing color to **black**"),
+    newCommand("red", "Change the turtle drawing color to **red**"),
+    newCommand("green", "Change the turtle drawing color to **green**"),
+    newCommand("yellow", "Change the turtle drawing color to **yellow**"),
+    newCommand("blue", "Change the turtle drawing color to **blue**"),
+    newCommand("magenta", "Change the turtle drawing color to **magenta**"),
+    newCommand("cyan", "Change the turtle drawing color to **cyan**"),
+    newCommand("gray", "Change the turtle drawing color to **gray**"),
+    newCommand("random-color", "Change the turtle drawing color to a **random one**"),
+    newCommand("rgb", "Change the turtle drawing color to a **specific one**", ["red", "green", "blue"]),
+    newCommand("rgb-random-color", "Change the turtle drawing color to a **random one**"),
 ]
 
 export function activate(context: vscode.ExtensionContext) {
