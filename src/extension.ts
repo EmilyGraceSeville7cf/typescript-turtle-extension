@@ -205,7 +205,7 @@ const patternDiagnostics = [
 ].concat(
     commands.filter(command => command.args !== undefined).map(command =>
         newPatternDiagnostic(
-            new RegExp(`\\\(\\s*${command.name}((\\s+\\d+){${command.args!.length - 1}}|(\\s+\\d+){${command.args!.length + 1}})\\s*\\\)`),
+            new RegExp(`\\\(\\s*${command.name}((\\s+-?\\d+){${command.args!.length - 1}}|(\\s+-?\\d+){${command.args!.length + 1}})\\s*\\\)`),
             `'${command.name}' expected exactly ${command.args?.length} arguments`
         )
     )
