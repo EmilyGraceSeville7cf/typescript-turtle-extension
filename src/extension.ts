@@ -192,25 +192,27 @@ export function activate(context: vscode.ExtensionContext) {
 interface PatternDiagnostic {
     readonly regex: RegExp;
     readonly description: string;
+    readonly severity: vscode.DiagnosticSeverity;
 }
 
-function newPatternDiagnostic(regex: RegExp, description: string): PatternDiagnostic {
-    return { regex, description }
+function newPatternDiagnostic(regex: RegExp, description: string, severity: vscode.DiagnosticSeverity): PatternDiagnostic {
+    return { regex, description, severity }
 }
 
 const patternDiagnostics = [
-    newPatternDiagnostic(/\(\s*\d+(\s+\d+)?\s*\)/, "Red, green, blue color components were expected, less were found."),
-    newPatternDiagnostic(/\(\s*\d+(\s+\d+){3,}\s*\)/, "Just red, green, blue color components were expected, more were found.")
+    newPatternDiagnostic(/\(\s*\d+(\s+\d+)?\s*\)/, "Red, green, blue color components were expected, less were found.", vscode.DiagnosticSeverity.Warning),
+    newPatternDiagnostic(/\(\s*\d+(\s+\d+){3,}\s*\)/, "Just red, green, blue color components were expected, more were found.", vscode.DiagnosticSeverity.Warning)
 ].concat(
     commands.filter(command => command.args !== undefined).map(command =>
         newPatternDiagnostic(
             new RegExp(`\\\(\\s*${command.name}((\\s+-?\\d+){${command.args!.length - 1}}|(\\s+-?\\d+){${command.args!.length + 1}})\\s*\\\)`),
-            `'${command.name}' expected exactly ${command.args?.length} arguments`
+            `'${command.name}' expected exactly ${command.args?.length} arguments`,
+            vscode.DiagnosticSeverity.Error
         )
     )
 )
 
-export function refreshDiagnostics(doc: vscode.TextDocument, colorDiagnostics: vscode.DiagnosticCollection): void {
+export function refreshDiagnostics(doc: vscode.TextDocument, targetDiagnostics: vscode.DiagnosticCollection): void {
     const diagnostics: vscode.Diagnostic[] = [];
 
     for (let lineIndex = 0; lineIndex < doc.lineCount; lineIndex++) {
@@ -218,7 +220,7 @@ export function refreshDiagnostics(doc: vscode.TextDocument, colorDiagnostics: v
         tryCreateDiagnostic(lineOfText, lineIndex, diagnostics);
     }
 
-    colorDiagnostics.set(doc.uri, diagnostics);
+    targetDiagnostics.set(doc.uri, diagnostics);
 }
 
 function tryCreateDiagnostic(line: vscode.TextLine, lineIndex: number, diagnostics: vscode.Diagnostic[]) {
@@ -231,27 +233,27 @@ function tryCreateDiagnostic(line: vscode.TextLine, lineIndex: number, diagnosti
     const range = new vscode.Range(lineIndex, index, lineIndex, index + match.length);
 
     const diagnostic = new vscode.Diagnostic(range, patternDiagnostic.description,
-        vscode.DiagnosticSeverity.Warning);
+        patternDiagnostic.severity);
     diagnostic.code = "turtle";
     diagnostics.push(diagnostic);
 }
 
-export function subscribeToDocumentChanges(context: vscode.ExtensionContext, colorDiagnostics: vscode.DiagnosticCollection): void {
+export function subscribeToDocumentChanges(context: vscode.ExtensionContext, diagnostics: vscode.DiagnosticCollection): void {
     if (vscode.window.activeTextEditor)
-        refreshDiagnostics(vscode.window.activeTextEditor.document, colorDiagnostics);
+        refreshDiagnostics(vscode.window.activeTextEditor.document, diagnostics);
 
     context.subscriptions.push(
         vscode.window.onDidChangeActiveTextEditor(editor => {
             if (editor)
-                refreshDiagnostics(editor.document, colorDiagnostics);
+                refreshDiagnostics(editor.document, diagnostics);
         })
     );
 
     context.subscriptions.push(
-        vscode.workspace.onDidChangeTextDocument(e => refreshDiagnostics(e.document, colorDiagnostics))
+        vscode.workspace.onDidChangeTextDocument(e => refreshDiagnostics(e.document, diagnostics))
     );
 
     context.subscriptions.push(
-        vscode.workspace.onDidCloseTextDocument(doc => colorDiagnostics.delete(doc.uri))
+        vscode.workspace.onDidCloseTextDocument(doc => diagnostics.delete(doc.uri))
     );
 }
