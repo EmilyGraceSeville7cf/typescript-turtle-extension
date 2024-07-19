@@ -163,7 +163,8 @@ export function activate(context: vscode.ExtensionContext) {
 
                     return createUserDefinedIdentifierSnippet(line.match(identifier.regex)![1], identifier)
                 }).filter(completion => completion !== null).filter(completion =>
-                    keywordCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1
+                    keywordCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1 &&
+                    variableCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1
                 )
 
             const wordCompletions = [...new Set(document.getText().split(/\W/))].filter(word =>
