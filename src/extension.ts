@@ -12,7 +12,7 @@ function newCommand(name: string, description: string, args: string[] = []): Com
     return { name, description, args }
 }
 
-function createCommandSnippet(command: Command, label: string, kind: vscode.CompletionItemKind): vscode.CompletionItem {
+function newCommandSnippet(command: Command, label: string, kind: vscode.CompletionItemKind): vscode.CompletionItem {
     const completion = new vscode.CompletionItem(label, kind);
     completion.insertText = new vscode.SnippetString("(" + command.name);
 
@@ -33,7 +33,7 @@ function createCommandSnippet(command: Command, label: string, kind: vscode.Comp
     return completion
 }
 
-function createVariableSnippet(variable: string, description: string): vscode.CompletionItem {
+function newVariableSnippet(variable: string, description: string): vscode.CompletionItem {
     const completion = new vscode.CompletionItem(variable, vscode.CompletionItemKind.Variable);
     completion.insertText = new vscode.SnippetString(`(define ${variable} '(\${1:commands}))`);
     const docs: any = new vscode.MarkdownString(description);
@@ -42,7 +42,7 @@ function createVariableSnippet(variable: string, description: string): vscode.Co
     return completion
 }
 
-function createKeywordSnippet(keyword: string, body: string, description: string): vscode.CompletionItem {
+function newKeywordSnippet(keyword: string, body: string, description: string): vscode.CompletionItem {
     const completion = new vscode.CompletionItem(keyword, vscode.CompletionItemKind.Keyword);
     completion.insertText = new vscode.SnippetString(`(${keyword} ${body})`);
     const docs: any = new vscode.MarkdownString(description);
@@ -51,7 +51,7 @@ function createKeywordSnippet(keyword: string, body: string, description: string
     return completion
 }
 
-function createWordSnippet(word: string): vscode.CompletionItem {
+function newWordSnippet(word: string): vscode.CompletionItem {
     const completion = new vscode.CompletionItem(word, vscode.CompletionItemKind.Text);
     completion.insertText = new vscode.SnippetString(word);
     return completion
@@ -99,7 +99,7 @@ function newUserDefinedIdentifier(regex: RegExp, description: string, kind: vsco
     return { regex, description, kind }
 }
 
-function createUserDefinedIdentifierSnippet(identifier: string, specification: UserDefinedIdentifier): vscode.CompletionItem {
+function newUserDefinedIdentifierSnippet(identifier: string, specification: UserDefinedIdentifier): vscode.CompletionItem {
     const completion = new vscode.CompletionItem(identifier, specification.kind);
     completion.insertText = new vscode.SnippetString(identifier);
     const docs: any = new vscode.MarkdownString(specification.description);
@@ -108,7 +108,7 @@ function createUserDefinedIdentifierSnippet(identifier: string, specification: U
     return completion
 }
 
-const identifiers = [
+const userDefinedIdentifiers = [
     newUserDefinedIdentifier(/\(\s*define (?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)/, "A user defined **variable**", vscode.CompletionItemKind.Variable),
     newUserDefinedIdentifier(/\(\s*define \((?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)/, "A user defined **function**", vscode.CompletionItemKind.Function),
     newUserDefinedIdentifier(/(\(\s*\d+\s+\d+\s+\d+\s*\))/, "A user defined **color**", vscode.CompletionItemKind.Color),
@@ -120,12 +120,12 @@ export function activate(context: vscode.ExtensionContext) {
     const provider = vscode.languages.registerCompletionItemProvider('scheme', {
         provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
             const commandCompletions = commands.map(command =>
-                createCommandSnippet(command, command.name, vscode.CompletionItemKind.Function)
+                newCommandSnippet(command, command.name, vscode.CompletionItemKind.Function)
             )
 
             const snippetCompletions = commands
                 .filter(command => command.shortcut !== undefined)
-                .map(command => createCommandSnippet(command, command.shortcut!, vscode.CompletionItemKind.Snippet))
+                .map(command => newCommandSnippet(command, command.shortcut!, vscode.CompletionItemKind.Snippet))
 
             const constants = [45, 90, 135, 180]
             constants.forEach(constant => constants.push(-constant))
@@ -143,24 +143,24 @@ export function activate(context: vscode.ExtensionContext) {
             configurationVariableDocs.baseUri = vscode.Uri.parse('https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle');
 
             const variableCompletions = [
-                createVariableSnippet("turtle-configuration", "**Commands** for the turtle"),
-                createVariableSnippet("turtle-theme", "**Theme** for the turtle")
+                newVariableSnippet("turtle-configuration", "**Commands** for the turtle"),
+                newVariableSnippet("turtle-theme", "**Theme** for the turtle")
             ]
 
             const keywordCompletions = [
-                createKeywordSnippet("if", "${1:condition} ${2:then} ${3:else}", "Check whether a condition is true and do something in regard"),
-                createKeywordSnippet("define", "${1:variable} ${2:value}", "**Define** a variable with a specific value"),
-                createKeywordSnippet("set!", "${1:variable} ${2:value}", "**Set** a specific value to a variable"),
-                createKeywordSnippet("let*", "((${1:variable} ${2:value})) ${3:commands}", "**Define** variables with specific values")
+                newKeywordSnippet("if", "${1:condition} ${2:then} ${3:else}", "Check whether a condition is true and do something in regard"),
+                newKeywordSnippet("define", "${1:variable} ${2:value}", "**Define** a variable with a specific value"),
+                newKeywordSnippet("set!", "${1:variable} ${2:value}", "**Set** a specific value to a variable"),
+                newKeywordSnippet("let*", "((${1:variable} ${2:value})) ${3:commands}", "**Define** variables with specific values")
             ]
 
             const userDefinedIdentifierCompletions = [...new Set(document.getText().split("\n"))]
                 .map(line => {
-                    const identifier = identifiers.find(identifier => identifier.regex.test(line))
+                    const identifier = userDefinedIdentifiers.find(identifier => identifier.regex.test(line))
                     if (identifier === undefined)
                         return null
 
-                    return createUserDefinedIdentifierSnippet(line.match(identifier.regex)![1], identifier)
+                    return newUserDefinedIdentifierSnippet(line.match(identifier.regex)![1], identifier)
                 }).filter(completion => completion !== null).filter(completion =>
                     keywordCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1 &&
                     variableCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1
@@ -168,7 +168,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             const wordCompletions = [...new Set(document.getText().split(/\W/))].filter(word =>
                 keywordCompletions.map(snippet => snippet.label).indexOf(word) === -1
-            ).map(word => createWordSnippet(word))
+            ).map(word => newWordSnippet(word))
 
             return commandCompletions.concat(snippetCompletions)
                 .concat(constantCompletions)
@@ -188,7 +188,6 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 
-
 interface PatternDiagnostic {
     readonly regex: RegExp;
     readonly description: string;
@@ -204,9 +203,7 @@ const patternDiagnostics = [
     newPatternDiagnostic(/\(\s*\d+(\s+\d+){3,}\s*\)/, "Just red, green, blue color components were expected, more were found.", vscode.DiagnosticSeverity.Warning)
 ].concat(
     commands.filter(command => command.args !== undefined).map(command => {
-        let regex = `\\\(\\s*${command.name}((\\s+-?\\d+){${command.args!.length - 1}}|(\\s+-?\\d+){${command.args!.length + 1}})\\s*\\\)`
-        if (command.args!.length > 0)
-            regex += `|\\\(\\s*${command.name}\\s*\\\)`
+        let regex = `\\(\\s*${command.name}((\\s+-?\\d+){0,${command.args!.length - 1}}|(\\s+-?\\d+){${command.args!.length + 1},})\\s*\\)`
 
         const diagnostic = newPatternDiagnostic(
             new RegExp(regex),
@@ -219,7 +216,7 @@ const patternDiagnostics = [
 ).concat(
     commands.filter(command => command.args !== undefined).map(command =>
         newPatternDiagnostic(
-            new RegExp(`\\\(\\s*${command.name}(\\s+-?\\d+)*(\\s+[a-zA-Z])(\\s+-?\\d+)*\\\)`),
+            new RegExp(`\\(\\s*${command.name}(\\s+-?\\d+)*(\\s+[a-zA-Z])(\\s+-?\\d+)*\\)`),
             `'${command.name}' expected integer arguments`,
             vscode.DiagnosticSeverity.Error
         )
