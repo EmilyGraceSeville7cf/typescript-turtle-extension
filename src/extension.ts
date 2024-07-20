@@ -5,6 +5,7 @@ import * as keywords from './keywords';
 import * as words from './words';
 import * as constants from './constants';
 import * as userDefinedIdentifiers from './userDefinedIdentifiers';
+import * as builtinIdentifiers from './builtinIdentifiers';
 
 export function activate(context: vscode.ExtensionContext) {
     const provider = vscode.languages.registerCompletionItemProvider('scheme', {
@@ -69,11 +70,7 @@ const patternDiagnostics = [
             vscode.DiagnosticSeverity.Error
         )
     )
-).concat([
-    newPatternDiagnostic(new RegExp(`\\(\\s*(?!(${allCommandNames.join("|")})(\\s*\\)|\\s+[^()]*))[^()]*\\)`),
-        "Unknown command.",
-        vscode.DiagnosticSeverity.Error)
-])
+)
 
 export function refreshDiagnostics(document: vscode.TextDocument, targetDiagnostics: vscode.DiagnosticCollection): void {
     if (document.languageId !== "scheme")
@@ -83,14 +80,21 @@ export function refreshDiagnostics(document: vscode.TextDocument, targetDiagnost
 
     for (let lineIndex = 0; lineIndex < document.lineCount; lineIndex++) {
         const line = document.lineAt(lineIndex);
-        tryCreateDiagnostic(line, lineIndex, diagnostics);
+        tryCreateDiagnostic(document, line, lineIndex, diagnostics);
     }
 
     targetDiagnostics.set(document.uri, diagnostics);
 }
 
-function tryCreateDiagnostic(line: vscode.TextLine, lineIndex: number, diagnostics: vscode.Diagnostic[]) {
-    const patternDiagnostic = patternDiagnostics.find(patternDiagnostic => patternDiagnostic.regex.test(line.text))
+function tryCreateDiagnostic(document: vscode.TextDocument, line: vscode.TextLine, lineIndex: number, diagnostics: vscode.Diagnostic[]) {
+    const alternatives = allCommandNames.concat(builtinIdentifiers.list)
+        .concat(userDefinedIdentifiers.listFor(document)).join("|")
+
+    const patternDiagnostic = patternDiagnostics.concat([
+        newPatternDiagnostic(new RegExp(`\\(\\s*(?!(${alternatives})(\\s*\\)|\\s+[^()]*))[^()]*\\)`),
+            "Unknown command or identifier, possibly built-in or defined externally.",
+            vscode.DiagnosticSeverity.Warning)
+    ]).find(patternDiagnostic => patternDiagnostic.regex.test(line.text))
     if (patternDiagnostic === undefined)
         return
 
