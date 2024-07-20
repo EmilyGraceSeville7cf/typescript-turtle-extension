@@ -3,6 +3,7 @@ import * as commands from './commands';
 import * as variables from './variables';
 import * as keywords from './keywords';
 import * as words from './words';
+import * as constants from './constants';
 
 interface UserDefinedIdentifier {
     readonly regex: RegExp;
@@ -34,15 +35,6 @@ const userDefinedIdentifiers = [
 export function activate(context: vscode.ExtensionContext) {
     const provider = vscode.languages.registerCompletionItemProvider('scheme', {
         provideCompletionItems(document: vscode.TextDocument, _position: vscode.Position, _token: vscode.CancellationToken, _context: vscode.CompletionContext) {
-            const constants = [45, 90, 135, 180]
-            constants.forEach(constant => constants.push(-constant))
-
-            const constantCompletions = constants.map(constant => {
-                const completion = new vscode.CompletionItem(constant.toString(), vscode.CompletionItemKind.Constant);
-                completion.insertText = new vscode.SnippetString(constant.toString());
-                return completion
-            })
-
             const userDefinedIdentifierCompletions = [...new Set(document.getText().split("\n"))]
                 .map(line => {
                     const identifier = userDefinedIdentifiers.find(identifier => identifier.regex.test(line))
@@ -58,8 +50,8 @@ export function activate(context: vscode.ExtensionContext) {
             return commands.allCompletions
                 .concat(variables.allCompletions)
                 .concat(keywords.allCompletions)
+                .concat(constants.list)
                 .concat(words.createWordCompletionsFor(document))
-                .concat(constantCompletions)
                 .concat(userDefinedIdentifierCompletions)
         }
     });
