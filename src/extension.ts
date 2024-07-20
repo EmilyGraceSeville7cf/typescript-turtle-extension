@@ -118,7 +118,7 @@ const userDefinedIdentifiers = [
 
 export function activate(context: vscode.ExtensionContext) {
     const provider = vscode.languages.registerCompletionItemProvider('scheme', {
-        provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
+        provideCompletionItems(document: vscode.TextDocument, _position: vscode.Position, _token: vscode.CancellationToken, _context: vscode.CompletionContext) {
             const commandCompletions = commands.map(command =>
                 newCommandSnippet(command, command.name, vscode.CompletionItemKind.Function)
             )
