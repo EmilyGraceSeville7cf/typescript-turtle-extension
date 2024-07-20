@@ -34,7 +34,7 @@ export const list = [
     __create("turtle-theme", "A **theme** code")
 ]
 
-export const variableCompletions = list.map(command => __createVariableCompletion(command))
-export const variableSnippetCompletions = list.map(command => __createVariableSnippetCompletion(command))
+export const variableCompletions = list.map(variable => __createVariableCompletion(variable))
+export const variableSnippetCompletions = list.map(variable => __createVariableSnippetCompletion(variable))
     .filter(completion => completion !== null)
 export const allCompletions = variableCompletions.concat(variableSnippetCompletions)
