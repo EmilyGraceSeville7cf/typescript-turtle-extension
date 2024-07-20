@@ -17,7 +17,7 @@ function __create(userDefinedIdentifierRegex: RegExp, userDefinedIdentifierDescr
 function __createCompletion(userDefinedIdentifier: UserDefinedIdentifier, completionLabel: string): vscode.CompletionItem {
     const completion = new vscode.CompletionItem(completionLabel, userDefinedIdentifier.kind);
     completion.insertText = new vscode.SnippetString(completionLabel);
-    completion.documentation = utils.createDocumentation(userDefinedIdentifier.description, "https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/")
+    completion.documentation = utils.createDocumentation(userDefinedIdentifier.description, "https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/", "Suggestions may be inaccurate because they are RegExp-based, we are working on the LSP server to provide the best experience")
     return completion
 }
 
@@ -45,7 +45,12 @@ export function createUserDefinedIdentifierCompletionsFor(document: vscode.TextD
 }
 
 export function listFor(document: vscode.TextDocument): string[] {
-    return createUserDefinedIdentifierCompletionsFor(document).map(completion =>
-        completion.label as string
-    )
+    return [...new Set(document.getText().split("\n"))]
+        .map(line => {
+            const identifier = userDefinedIdentifiers.find(identifier => identifier.regex.test(line))
+            if (identifier === undefined)
+                return null
+
+            return line.match(identifier.regex)![1]
+        }).filter(completion => completion !== null)
 }
