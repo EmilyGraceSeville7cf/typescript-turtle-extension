@@ -200,14 +200,19 @@ function newPatternDiagnostic(regex: RegExp, description: string, severity: vsco
 
 const patternDiagnostics = [
     newPatternDiagnostic(/\(\s*\d+(\s+\d+)?\s*\)/, "Red, green, blue color components were expected, less were found.", vscode.DiagnosticSeverity.Warning),
-    newPatternDiagnostic(/\(\s*\d+(\s+\d+){3,}\s*\)/, "Just red, green, blue color components were expected, more were found.", vscode.DiagnosticSeverity.Warning)
+    newPatternDiagnostic(/\(\s*\d+(\s+\d+){3,}\s*\)/, "Just red, green, blue color components were expected, more were found.", vscode.DiagnosticSeverity.Warning),
+    newPatternDiagnostic(/\([^()a-zA-Z]*-\d+[^()a-zA-Z]*\)/, "Just positive color components expected, negative were found.", vscode.DiagnosticSeverity.Warning),
+    newPatternDiagnostic(/\(\s*\)/, "Valid command expected.", vscode.DiagnosticSeverity.Warning),
+    newPatternDiagnostic(/\(\s*define\s+turtle-(configuration|theme)\s+\(/, "It's recommended to escape the whole command list with a single quote.", vscode.DiagnosticSeverity.Information),
+    newPatternDiagnostic(/\(\s+\S/, "It's recommended to remove spaces right after the opening parenthesis.", vscode.DiagnosticSeverity.Information),
+    newPatternDiagnostic(/\S\s+\)/, "It's recommended to remove spaces right before the opening parenthesis.", vscode.DiagnosticSeverity.Information),
 ].concat(
     commands.filter(command => command.args !== undefined).map(command => {
         let regex = `\\(\\s*${command.name}((\\s+-?\\d+){0,${command.args!.length - 1}}|(\\s+-?\\d+){${command.args!.length + 1},})\\s*\\)`
 
         const diagnostic = newPatternDiagnostic(
             new RegExp(regex),
-            `'${command.name}' expected exactly ${command.args?.length} arguments`,
+            `'${command.name}' expected exactly ${command.args?.length} arguments.`,
             vscode.DiagnosticSeverity.Error
         )
         return diagnostic
@@ -221,7 +226,11 @@ const patternDiagnostics = [
             vscode.DiagnosticSeverity.Error
         )
     )
-)
+).concat([
+    newPatternDiagnostic(new RegExp(`\\(\\s*(?!(${commands.map(command => command.name).join("|")})(\\s*\\)|\\s+[^()]*))[^()]*\\)`),
+        "Unknown command.",
+        vscode.DiagnosticSeverity.Error)
+])
 
 export function refreshDiagnostics(document: vscode.TextDocument, targetDiagnostics: vscode.DiagnosticCollection): void {
     const diagnostics: vscode.Diagnostic[] = [];
