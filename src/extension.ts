@@ -2,13 +2,7 @@ import * as vscode from 'vscode';
 import * as commands from './commands';
 import * as variables from './variables';
 import * as keywords from './keywords';
-
-function newWordSnippet(word: string): vscode.CompletionItem {
-    const completion = new vscode.CompletionItem(word, vscode.CompletionItemKind.Text);
-    completion.insertText = new vscode.SnippetString(word);
-    return completion
-}
-
+import * as words from './words';
 
 interface UserDefinedIdentifier {
     readonly regex: RegExp;
@@ -49,12 +43,6 @@ export function activate(context: vscode.ExtensionContext) {
                 return completion
             })
 
-            const configurationVariable = new vscode.CompletionItem("turtle-configuration", vscode.CompletionItemKind.Variable);
-            configurationVariable.insertText = new vscode.SnippetString("(define turtle-configuration '(${1:commands}))");
-            const configurationVariableDocs: any = new vscode.MarkdownString("**Commands** for the turtle");
-            configurationVariable.documentation = configurationVariableDocs;
-            configurationVariableDocs.baseUri = vscode.Uri.parse('https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle');
-
             const userDefinedIdentifierCompletions = [...new Set(document.getText().split("\n"))]
                 .map(line => {
                     const identifier = userDefinedIdentifiers.find(identifier => identifier.regex.test(line))
@@ -69,7 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             const wordCompletions = [...new Set(document.getText().split(/\W/))].filter(word =>
                 keywords.allCompletions.map(snippet => snippet.label).indexOf(word) === -1
-            ).map(word => newWordSnippet(word))
+            ).map(word => words.createCompletion(word))
 
             return commands.allCompletions
                 .concat(variables.allCompletions)
