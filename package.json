@@ -1,6 +1,7 @@
 {
     "name": "gimp-turtle",
     "publisher": "EmilyGraceSeville7cf",
+    "icon": "./assets/logo.jpg",
     "repository": {
         "type": "git",
         "url": "https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle"
