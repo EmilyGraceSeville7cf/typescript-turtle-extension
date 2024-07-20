@@ -233,6 +233,9 @@ const patternDiagnostics = [
 ])
 
 export function refreshDiagnostics(document: vscode.TextDocument, targetDiagnostics: vscode.DiagnosticCollection): void {
+    if (document.languageId !== "scheme")
+        return
+
     const diagnostics: vscode.Diagnostic[] = [];
 
     for (let lineIndex = 0; lineIndex < document.lineCount; lineIndex++) {
