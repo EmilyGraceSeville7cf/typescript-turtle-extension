@@ -223,15 +223,15 @@ const patternDiagnostics = [
     )
 )
 
-export function refreshDiagnostics(doc: vscode.TextDocument, targetDiagnostics: vscode.DiagnosticCollection): void {
+export function refreshDiagnostics(document: vscode.TextDocument, targetDiagnostics: vscode.DiagnosticCollection): void {
     const diagnostics: vscode.Diagnostic[] = [];
 
-    for (let lineIndex = 0; lineIndex < doc.lineCount; lineIndex++) {
-        const lineOfText = doc.lineAt(lineIndex);
-        tryCreateDiagnostic(lineOfText, lineIndex, diagnostics);
+    for (let lineIndex = 0; lineIndex < document.lineCount; lineIndex++) {
+        const line = document.lineAt(lineIndex);
+        tryCreateDiagnostic(line, lineIndex, diagnostics);
     }
 
-    targetDiagnostics.set(doc.uri, diagnostics);
+    targetDiagnostics.set(document.uri, diagnostics);
 }
 
 function tryCreateDiagnostic(line: vscode.TextLine, lineIndex: number, diagnostics: vscode.Diagnostic[]) {
