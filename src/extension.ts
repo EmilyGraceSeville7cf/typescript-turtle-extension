@@ -1,15 +1,7 @@
 import * as vscode from 'vscode';
 import * as commands from './commands';
 import * as variables from './variables';
-
-function newKeywordSnippet(keyword: string, body: string, description: string): vscode.CompletionItem {
-    const completion = new vscode.CompletionItem(keyword, vscode.CompletionItemKind.Keyword);
-    completion.insertText = new vscode.SnippetString(`(${keyword} ${body})`);
-    const docs: any = new vscode.MarkdownString(description);
-    completion.documentation = docs;
-    docs.baseUri = vscode.Uri.parse('https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/');
-    return completion
-}
+import * as keywords from './keywords';
 
 function newWordSnippet(word: string): vscode.CompletionItem {
     const completion = new vscode.CompletionItem(word, vscode.CompletionItemKind.Text);
@@ -63,13 +55,6 @@ export function activate(context: vscode.ExtensionContext) {
             configurationVariable.documentation = configurationVariableDocs;
             configurationVariableDocs.baseUri = vscode.Uri.parse('https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle');
 
-            const keywordCompletions = [
-                newKeywordSnippet("if", "${1:condition} ${2:then} ${3:else}", "Check whether a condition is true and do something in regard"),
-                newKeywordSnippet("define", "${1:variable} ${2:value}", "**Define** a variable with a specific value"),
-                newKeywordSnippet("set!", "${1:variable} ${2:value}", "**Set** a specific value to a variable"),
-                newKeywordSnippet("let*", "((${1:variable} ${2:value})) ${3:commands}", "**Define** variables with specific values")
-            ]
-
             const userDefinedIdentifierCompletions = [...new Set(document.getText().split("\n"))]
                 .map(line => {
                     const identifier = userDefinedIdentifiers.find(identifier => identifier.regex.test(line))
@@ -78,18 +63,18 @@ export function activate(context: vscode.ExtensionContext) {
 
                     return newUserDefinedIdentifierSnippet(line.match(identifier.regex)![1], identifier)
                 }).filter(completion => completion !== null).filter(completion =>
-                    keywordCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1 &&
+                    keywords.allCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1 &&
                     variables.variableCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1
                 )
 
             const wordCompletions = [...new Set(document.getText().split(/\W/))].filter(word =>
-                keywordCompletions.map(snippet => snippet.label).indexOf(word) === -1
+                keywords.allCompletions.map(snippet => snippet.label).indexOf(word) === -1
             ).map(word => newWordSnippet(word))
 
             return commands.allCompletions
                 .concat(variables.allCompletions)
+                .concat(keywords.allCompletions)
                 .concat(constantCompletions)
-                .concat(keywordCompletions)
                 .concat(userDefinedIdentifierCompletions)
                 .concat(wordCompletions)
         }
