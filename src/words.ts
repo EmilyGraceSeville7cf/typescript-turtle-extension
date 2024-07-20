@@ -12,10 +12,13 @@ function __createCompletion(word: string): vscode.CompletionItem {
 }
 
 export function createWordCompletionsFor(document: vscode.TextDocument): vscode.CompletionItem[] {
-    return [...new Set(document.getText().split(/\W/))].filter(word =>
-        commands.list.map(keyword => keyword.name).indexOf(word) === -1 &&
-        keywords.list.map(keyword => keyword.name).indexOf(word) === -1 &&
-        variables.list.map(keyword => keyword.name).indexOf(word) === -1
-    ).map(word => __createCompletion(word))
+    return listFor(document).map(word => __createCompletion(word))
 }
 
+export function listFor(document: vscode.TextDocument): string[] {
+    return [...new Set(document.getText().split(/\W/))].filter(word =>
+        commands.list.map(command => command.name).indexOf(word) === -1 &&
+        keywords.list.map(keyword => keyword.name).indexOf(word) === -1 &&
+        variables.list.map(variable => variable.name).indexOf(word) === -1
+    )
+}

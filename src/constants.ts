@@ -7,4 +7,4 @@ function __createCompletion(constant: number) {
 }
 
 let constants = [45, 90, 135, 180]
-export const list = constants.concat(constants.map(constant => -constant)).map(constant => __createCompletion(constant))
+export const allCompletions = constants.concat(constants.map(constant => -constant)).map(constant => __createCompletion(constant))

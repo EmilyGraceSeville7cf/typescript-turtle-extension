@@ -4,55 +4,17 @@ import * as variables from './variables';
 import * as keywords from './keywords';
 import * as words from './words';
 import * as constants from './constants';
-
-interface UserDefinedIdentifier {
-    readonly regex: RegExp;
-    readonly description: string;
-    readonly kind: vscode.CompletionItemKind;
-}
-
-function newUserDefinedIdentifier(regex: RegExp, description: string, kind: vscode.CompletionItemKind): UserDefinedIdentifier {
-    return { regex, description, kind }
-}
-
-function newUserDefinedIdentifierSnippet(identifier: string, specification: UserDefinedIdentifier): vscode.CompletionItem {
-    const completion = new vscode.CompletionItem(identifier, specification.kind);
-    completion.insertText = new vscode.SnippetString(identifier);
-    const docs: any = new vscode.MarkdownString(specification.description);
-    completion.documentation = docs;
-    docs.baseUri = vscode.Uri.parse('https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle');
-    return completion
-}
-
-const userDefinedIdentifiers = [
-    newUserDefinedIdentifier(/\(\s*define (?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)/, "A possible user defined **variable**", vscode.CompletionItemKind.Variable),
-    newUserDefinedIdentifier(/\(\s*define \((?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)/, "A possible user defined **function**", vscode.CompletionItemKind.Function),
-    newUserDefinedIdentifier(/(\(\s*\d+\s+\d+\s+\d+\s*\))/, "A possible user defined **color**", vscode.CompletionItemKind.Color),
-    newUserDefinedIdentifier(/\((?:move-on|move-to)\s+(-?\d+\s+-?\d+)\)/, "A possible user defined **vector**", vscode.CompletionItemKind.Constant),
-]
-
+import * as userDefinedIdentifiers from './userDefinedIdentifiers';
 
 export function activate(context: vscode.ExtensionContext) {
     const provider = vscode.languages.registerCompletionItemProvider('scheme', {
         provideCompletionItems(document: vscode.TextDocument, _position: vscode.Position, _token: vscode.CancellationToken, _context: vscode.CompletionContext) {
-            const userDefinedIdentifierCompletions = [...new Set(document.getText().split("\n"))]
-                .map(line => {
-                    const identifier = userDefinedIdentifiers.find(identifier => identifier.regex.test(line))
-                    if (identifier === undefined)
-                        return null
-
-                    return newUserDefinedIdentifierSnippet(line.match(identifier.regex)![1], identifier)
-                }).filter(completion => completion !== null).filter(completion =>
-                    keywords.allCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1 &&
-                    variables.variableCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1
-                )
-
             return commands.allCompletions
                 .concat(variables.allCompletions)
                 .concat(keywords.allCompletions)
-                .concat(constants.list)
+                .concat(constants.allCompletions)
                 .concat(words.createWordCompletionsFor(document))
-                .concat(userDefinedIdentifierCompletions)
+                .concat(userDefinedIdentifiers.createUserDefinedIdentifierCompletionsFor(document))
         }
     });
 
