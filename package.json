@@ -1,8 +1,13 @@
 {
     "name": "gimp-turtle",
+    "publisher": "EmilyGraceSeville7cf",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle"
+    },
     "displayName": "GIMP Turtle",
     "description": "Provides support for https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle configs.",
-    "version": "0.0.1",
+    "version": "0.3.0",
     "engines": {
         "vscode": "^1.91.0"
     },
