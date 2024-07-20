@@ -6,8 +6,8 @@ Provides support for [Turtle configs][turtle].
 
 [turtle]: https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle?tab=readme-ov-file#configuration-script-commands
 
-![screenshot](assets/intellisence-screenshot.jpg)
-![screenshot](assets/diagnostics-screenshot.jpg)
+![screenshot](https://raw.githubusercontent.com/EmilyGraceSeville7cf/typescript-turtle-extension/main/assets/intellisence-screenshot.jpg)
+![screenshot](https://raw.githubusercontent.com/EmilyGraceSeville7cf/typescript-turtle-extension/main/assets/diagnostics-screenshot.jpg)
 
 ## Features
 
