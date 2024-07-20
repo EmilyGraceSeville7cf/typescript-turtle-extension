@@ -31,12 +31,15 @@ function __createCompletion(command: Command, completionLabel: string, completio
     return completion
 }
 
-export function createCommandCompletion(command: Command): vscode.CompletionItem {
+function __createCommandCompletion(command: Command): vscode.CompletionItem {
     return __createCompletion(command, command.name, vscode.CompletionItemKind.Function)
 }
 
-export function createCommandSnippetCompletion(command: Command): vscode.CompletionItem {
-    return __createCompletion(command, command.name, vscode.CompletionItemKind.Snippet)
+function __createCommandSnippetCompletion(command: Command): vscode.CompletionItem | null {
+    if (command.shortcut === undefined)
+        return null
+
+    return __createCompletion(command, command.shortcut, vscode.CompletionItemKind.Snippet)
 }
 
 export const list = [
@@ -69,3 +72,8 @@ export const list = [
     __create("rgb", "Change the turtle drawing color to a **specific one**", ["red", "green", "blue"]),
     __create("rgb-random-color", "Change the turtle drawing color to a **random one**"),
 ]
+
+export const commandCompletions = list.map(command => __createCommandCompletion(command))
+export const commandSnippetCompletions = list.map(command => __createCommandSnippetCompletion(command))
+    .filter(completion => completion !== null)
+export const allCompletions = commandCompletions.concat(commandSnippetCompletions)

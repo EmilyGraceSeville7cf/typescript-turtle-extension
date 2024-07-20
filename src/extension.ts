@@ -1,14 +1,6 @@
 import * as vscode from 'vscode';
 import * as commands from './commands';
-
-function newVariableSnippet(variable: string, description: string): vscode.CompletionItem {
-    const completion = new vscode.CompletionItem(variable, vscode.CompletionItemKind.Variable);
-    completion.insertText = new vscode.SnippetString(`(define ${variable} '(\${1:commands}))`);
-    const docs: any = new vscode.MarkdownString(description);
-    completion.documentation = docs;
-    docs.baseUri = vscode.Uri.parse('https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle');
-    return completion
-}
+import * as variables from './variables';
 
 function newKeywordSnippet(keyword: string, body: string, description: string): vscode.CompletionItem {
     const completion = new vscode.CompletionItem(keyword, vscode.CompletionItemKind.Keyword);
@@ -56,14 +48,6 @@ const userDefinedIdentifiers = [
 export function activate(context: vscode.ExtensionContext) {
     const provider = vscode.languages.registerCompletionItemProvider('scheme', {
         provideCompletionItems(document: vscode.TextDocument, _position: vscode.Position, _token: vscode.CancellationToken, _context: vscode.CompletionContext) {
-            const commandCompletions = commands.list.map(command =>
-                commands.createCommandCompletion(command)
-            )
-
-            const snippetCompletions = commands.list
-                .filter(command => command.shortcut !== undefined)
-                .map(command => commands.createCommandSnippetCompletion(command))
-
             const constants = [45, 90, 135, 180]
             constants.forEach(constant => constants.push(-constant))
 
@@ -78,11 +62,6 @@ export function activate(context: vscode.ExtensionContext) {
             const configurationVariableDocs: any = new vscode.MarkdownString("**Commands** for the turtle");
             configurationVariable.documentation = configurationVariableDocs;
             configurationVariableDocs.baseUri = vscode.Uri.parse('https://github.com/EmilyGraceSeville7cf/tinyscheme-turtle');
-
-            const variableCompletions = [
-                newVariableSnippet("turtle-configuration", "**Commands** for the turtle"),
-                newVariableSnippet("turtle-theme", "**Theme** for the turtle")
-            ]
 
             const keywordCompletions = [
                 newKeywordSnippet("if", "${1:condition} ${2:then} ${3:else}", "Check whether a condition is true and do something in regard"),
@@ -100,16 +79,16 @@ export function activate(context: vscode.ExtensionContext) {
                     return newUserDefinedIdentifierSnippet(line.match(identifier.regex)![1], identifier)
                 }).filter(completion => completion !== null).filter(completion =>
                     keywordCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1 &&
-                    variableCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1
+                    variables.variableCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1
                 )
 
             const wordCompletions = [...new Set(document.getText().split(/\W/))].filter(word =>
                 keywordCompletions.map(snippet => snippet.label).indexOf(word) === -1
             ).map(word => newWordSnippet(word))
 
-            return commandCompletions.concat(snippetCompletions)
+            return commands.allCompletions
+                .concat(variables.allCompletions)
                 .concat(constantCompletions)
-                .concat(variableCompletions)
                 .concat(keywordCompletions)
                 .concat(userDefinedIdentifierCompletions)
                 .concat(wordCompletions)
