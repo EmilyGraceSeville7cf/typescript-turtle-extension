@@ -181,10 +181,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(provider);
 
-    const colorDiagnostics = vscode.languages.createDiagnosticCollection("turtle");
-    context.subscriptions.push(colorDiagnostics);
+    const diagnostics = vscode.languages.createDiagnosticCollection("turtle");
+    context.subscriptions.push(diagnostics);
 
-    subscribeToDocumentChanges(context, colorDiagnostics);
+    subscribeToDocumentChanges(context, diagnostics);
 }
 
 
