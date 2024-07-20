@@ -14,9 +14,9 @@ Provides support for [Turtle configs][turtle].
 - [x] Completions for Turtle commands, and some basic Scheme constructs
 - [x] RegExp-based completions for:
   - user-defined variables
-  - user-defined commands
-  - user-defined colors
-  - user-defined vectors
+  - user-defined commands (with their arguments included)
+  - user-defined colors (number triples)
+  - user-defined vectors (number pairs)
   - built-in variables
   - built-in commands
 - [x] RegExp-based warnings for:
