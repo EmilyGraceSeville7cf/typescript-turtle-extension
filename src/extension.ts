@@ -55,16 +55,12 @@ export function activate(context: vscode.ExtensionContext) {
                     variables.variableCompletions.map(snippet => snippet.label).indexOf(completion.label) === -1
                 )
 
-            const wordCompletions = [...new Set(document.getText().split(/\W/))].filter(word =>
-                keywords.allCompletions.map(snippet => snippet.label).indexOf(word) === -1
-            ).map(word => words.createCompletion(word))
-
             return commands.allCompletions
                 .concat(variables.allCompletions)
                 .concat(keywords.allCompletions)
+                .concat(words.createWordCompletionsFor(document))
                 .concat(constantCompletions)
                 .concat(userDefinedIdentifierCompletions)
-                .concat(wordCompletions)
         }
     });
 
@@ -86,6 +82,10 @@ interface PatternDiagnostic {
 function newPatternDiagnostic(regex: RegExp, description: string, severity: vscode.DiagnosticSeverity): PatternDiagnostic {
     return { regex, description, severity }
 }
+
+const allCommandNames = commands.list.map(command => command.name).concat(
+    keywords.list.map(keyword => keyword.name)
+)
 
 const patternDiagnostics = [
     newPatternDiagnostic(/\(\s*\d+(\s+\d+)?\s*\)/, "Red, green, blue color components were expected, less were found.", vscode.DiagnosticSeverity.Warning),
@@ -116,7 +116,7 @@ const patternDiagnostics = [
         )
     )
 ).concat([
-    newPatternDiagnostic(new RegExp(`\\(\\s*(?!(${commands.list.map(command => command.name).join("|")})(\\s*\\)|\\s+[^()]*))[^()]*\\)`),
+    newPatternDiagnostic(new RegExp(`\\(\\s*(?!(${allCommandNames.join("|")})(\\s*\\)|\\s+[^()]*))[^()]*\\)`),
         "Unknown command.",
         vscode.DiagnosticSeverity.Error)
 ])
