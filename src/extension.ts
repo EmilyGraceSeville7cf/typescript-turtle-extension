@@ -221,7 +221,7 @@ const patternDiagnostics = [
 ).concat(
     commands.filter(command => command.args !== undefined).map(command =>
         newPatternDiagnostic(
-            new RegExp(`\\(\\s*${command.name}(\\s+-?\\d+)*(\\s+[a-zA-Z])(\\s+-?\\d+)*\\)`),
+            new RegExp(`\\(\\s*${command.name}(\\s+-?\\d+)*(\\s+[a-zA-Z]+)(\\s+-?\\d+)*\\)`),
             `'${command.name}' expected integer arguments`,
             vscode.DiagnosticSeverity.Error
         )
@@ -259,12 +259,12 @@ function tryCreateDiagnostic(line: vscode.TextLine, lineIndex: number, diagnosti
 }
 
 export function subscribeToDocumentChanges(context: vscode.ExtensionContext, diagnostics: vscode.DiagnosticCollection): void {
-    if (vscode.window.activeTextEditor)
+    if (vscode.window.activeTextEditor && vscode.window.activeTextEditor.document.languageId === "scheme")
         refreshDiagnostics(vscode.window.activeTextEditor.document, diagnostics);
 
     context.subscriptions.push(
         vscode.window.onDidChangeActiveTextEditor(editor => {
-            if (editor)
+            if (editor && editor.document.languageId === "scheme")
                 refreshDiagnostics(editor.document, diagnostics);
         })
     );

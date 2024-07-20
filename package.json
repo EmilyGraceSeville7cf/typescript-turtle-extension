@@ -15,17 +15,10 @@
         "Programming Languages"
     ],
     "activationEvents": [
-        "*"
+        "onLanguage:scheme"
     ],
     "main": "./out/extension.js",
-    "contributes": {
-        "commands": [
-            {
-                "command": "gimp-turtle.helloWorld",
-                "title": "Hello World"
-            }
-        ]
-    },
+    "contributes": {},
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
