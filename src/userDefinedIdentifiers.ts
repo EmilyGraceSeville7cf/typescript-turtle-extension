@@ -41,7 +41,7 @@ function __createCompletion(document: vscode.TextDocument, userDefinedIdentifier
     const defaultDescription = utils.createDocumentation(userDefinedIdentifier.description, "https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/", inaccurateCompletionWarning)
 
     if (userDefinedIdentifier.kind === vscode.CompletionItemKind.Function) {
-        const signaturePattern = /;.*@signature (?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)\s+(?<signature>[a-zA-Z\[\]].+)/;
+        const signaturePattern = /;.*@signature\s+-\s+(?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)\s+(?<signature>[a-zA-Z\[\]].+)/;
 
         const signatures = [...new Set([...new Set(document.getText().split("\n"))]
             .map(line => line.match(signaturePattern))
@@ -52,7 +52,7 @@ function __createCompletion(document: vscode.TextDocument, userDefinedIdentifier
         if (signatures.length > 0) {
             const matchingSignature = signatures.find(signature => signature.name === completionLabel)
             if (matchingSignature !== undefined)
-                completion.documentation = utils.createDocumentation(`${userDefinedIdentifier.description}: *${matchingSignature.name} ${matchingSignature.signature}*`, "https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/", inaccurateCompletionWarning)
+                completion.documentation = utils.createDocumentation(`${userDefinedIdentifier.description}: *${matchingSignature.name} ${matchingSignature.signature.trim()}*`, "https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/", inaccurateCompletionWarning)
             else
                 completion.documentation = defaultDescription
         }
