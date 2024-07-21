@@ -24,6 +24,9 @@ function __createCompletion(userDefinedIdentifier: UserDefinedIdentifier, comple
             let index = 1;
 
             for (const arg of args) {
+                if (arg === ".")
+                    continue
+
                 completion.insertText.appendText(" ")
                 completion.insertText.appendPlaceholder(arg, index++)
             }
