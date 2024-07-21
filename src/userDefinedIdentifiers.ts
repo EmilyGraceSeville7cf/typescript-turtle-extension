@@ -4,7 +4,7 @@ import * as commands from "./commands"
 import * as keywords from "./keywords"
 import * as variables from "./variables"
 
-interface UserDefinedIdentifier {
+export interface UserDefinedIdentifier {
     readonly regex: RegExp;
     readonly description: string;
     readonly kind: vscode.CompletionItemKind;
