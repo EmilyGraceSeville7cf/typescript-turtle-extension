@@ -65,8 +65,8 @@ function __createCompletion(document: vscode.TextDocument, userDefinedIdentifier
 }
 
 const userDefinedIdentifiers = [
-    __create(/\(\s*define (?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)/, "A possible user defined **variable**", vscode.CompletionItemKind.Variable),
-    __create(/\(\s*define \((?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)(\s+([^()]+)\)|\s*\))/, "A possible user defined **function**", vscode.CompletionItemKind.Function),
+    __create(/^\s*\(\s*define (?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)/, "A possible user defined **variable**", vscode.CompletionItemKind.Variable),
+    __create(/^\s*\(\s*define \((?<identifier>[a-zA-Z][a-zA-Z0-9\-]+)(\s+([^()]+)\)|\s*\))/, "A possible user defined **function**", vscode.CompletionItemKind.Function),
     __create(/(\(\s*\d+\s+\d+\s+\d+\s*\))/, "A possible user defined **color**", vscode.CompletionItemKind.Color),
     __create(/\((?:move-on|move-to)\s+(-?\d+\s+-?\d+)\)/, "A possible user defined **vector**", vscode.CompletionItemKind.Constant),
 ]
