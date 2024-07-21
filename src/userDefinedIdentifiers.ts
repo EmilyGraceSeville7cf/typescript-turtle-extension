@@ -37,7 +37,7 @@ function __createCompletion(document: vscode.TextDocument, userDefinedIdentifier
     else
         completion.insertText = new vscode.SnippetString(completionLabel);
 
-    const inaccurateCompletionWarning = "Suggestions may be inaccurate because they are RegExp-based, we are working on the LSP server to provide the best experience";
+    const inaccurateCompletionWarning = "Suggestions may be inaccurate because they are [RegExp-based](https://github.com/EmilyGraceSeville7cf/typescript-turtle-extension/blob/main/src/userDefinedIdentifiers.ts#L67), we are working on the LSP server to provide the best experience";
     const defaultDescription = utils.createDocumentation(userDefinedIdentifier.description, "https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/", inaccurateCompletionWarning)
 
     if (userDefinedIdentifier.kind === vscode.CompletionItemKind.Function) {
