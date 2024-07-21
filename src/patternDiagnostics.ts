@@ -26,6 +26,7 @@ const __contextUnawarePatternDiagnostics = [
     __create(/\(\s*\d+(\s+\d+){3,}\s*\)/, "Just red, green, blue color components were expected, more were found.", vscode.DiagnosticSeverity.Warning),
     __create(/\([^()a-zA-Z]*-\d+[^()a-zA-Z]*\)/, "Just positive color components expected, negative were found.", vscode.DiagnosticSeverity.Warning),
     __create(/\(\s*\)/, "Valid command expected.", vscode.DiagnosticSeverity.Warning),
+    __create(/list\s*<\s*[^ ()]*\s*>/, "T[] syntax is expected instead of list<T>.", vscode.DiagnosticSeverity.Warning),
 ]
 
 const __argumentCountPatternDiagnostics = commands.list
