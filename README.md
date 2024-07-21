@@ -14,7 +14,7 @@ Provides support for [Turtle configs][turtle].
 - [x] Completions for Turtle commands, and some basic Scheme constructs
 - [x] RegExp-based completions for:
   - user-defined variables
-  - user-defined commands (with their arguments included)
+  - user-defined commands (with their arguments and types included)
   - user-defined colors (number triples)
   - user-defined vectors (number pairs)
   - built-in variables
@@ -24,3 +24,8 @@ Provides support for [Turtle configs][turtle].
   - incorrect RGB colors
   - incorrect argument count
   - incorrect code style
+- [x] Completions for `@author`, `@description` and `@year` keywords to explain
+  the author who has written some code, it's description and the year the code
+  was written respectively.
+- [x] Completion for `@signature` keyword for explaining expected argument types
+  for functions
